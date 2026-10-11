@@ -83,9 +83,24 @@
             opacity: 1;
             background-color: #eff6ff;
         }
+
+        .leave-form-table {
+            border-collapse: collapse;
+            width: 100%;
+            background: #ffffff;
+            color: #000000;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .leave-form-table th, .leave-form-table td {
+            border: 1px solid #000000;
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 13px;
+        }
     </style>
 </head>
-<body class="h-full text-slate-800 font-sans antialiased bg-slate-50 relative overflow-x-hidden">
+<body class="h-full text-slate-800 font-sans antialiased bg-slate-50 relative overflow-x-hidden" onclick="handleBodyClick(event)">
 
     <!-- Toast Notification View -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -186,9 +201,15 @@
                     <label class="block font-bold text-slate-700 mb-1">이름</label>
                     <input type="text" id="profile-edit-name" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200">
                 </div>
-                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('profile-modal')" class="px-4 py-2.5 rounded-xl text-slate-600 font-semibold">취소</button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">저장</button>
+                <div class="pt-2 flex items-center justify-between gap-2 border-t border-slate-100">
+                    <!-- 계정 삭제 버튼 추가 -->
+                    <button type="button" onclick="handleDeleteAccount()" class="px-4 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 font-semibold transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-xmark"></i> 계정 삭제
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeModal('profile-modal')" class="px-4 py-2.5 rounded-xl text-slate-600 font-semibold">취소</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">저장</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -285,10 +306,10 @@
 
     <!-- APPROVAL DETAIL MODAL -->
     <div id="approval-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
                 <div class="flex items-center gap-2">
-                    <span id="detail-category-badge" class="px-2.5 py-1 text-xs font-bold bg-east-100 text-east-700 rounded-md">업무일지</span>
+                    <span id="detail-category-badge" class="px-2.5 py-1 text-xs font-bold bg-east-100 text-east-700 rounded-md">휴가계획서</span>
                     <h3 class="font-bold text-slate-900 text-base" id="detail-title">문서 제목</h3>
                 </div>
                 <button onclick="closeModal('approval-detail-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -315,14 +336,12 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-                    <p class="font-bold text-slate-400 uppercase tracking-wider">상세 내용</p>
-                    <div id="detail-content" class="text-slate-700 leading-relaxed whitespace-pre-line min-h-[120px]"></div>
+                    <p class="font-bold text-slate-400 uppercase tracking-wider mb-2">휴가원 문서 내용</p>
+                    <div id="detail-content" class="text-slate-700 leading-relaxed"></div>
                 </div>
             </div>
             <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
-                <button onclick="deleteApprovalCurrent()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center gap-1.5">
-                    <i class="fa-solid fa-trash-can"></i> 기안 삭제
-                </button>
+                <div id="detail-delete-button-container"></div>
                 <div class="flex gap-2" id="detail-action-buttons"></div>
             </div>
         </div>
@@ -385,12 +404,27 @@
 
         <!-- Main Content Area Wrapper -->
         <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50">
-            <header class="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between shrink-0 z-10 shadow-sm">
+            <header class="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between shrink-0 z-10 shadow-sm relative">
                 <div class="flex items-center gap-4">
                     <button id="open-sidebar-btn" class="md:hidden text-slate-600 hover:text-slate-900 focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
                     <h1 id="page-title" class="text-xl font-bold text-slate-900">대시보드</h1>
                 </div>
                 <div class="flex items-center gap-3 sm:gap-5">
+                    <!-- Notification Bell & Dropdown -->
+                    <div class="relative" onclick="event.stopPropagation()">
+                        <button onclick="toggleNotificationDropdown()" class="relative p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center">
+                            <i class="fa-solid fa-bell text-sm"></i>
+                            <span id="notif-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden shadow-sm">0</span>
+                        </button>
+                        <div id="notif-dropdown" class="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 hidden z-50 p-4 space-y-3">
+                            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                                <h4 class="font-bold text-slate-900 text-xs flex items-center gap-1.5"><i class="fa-solid fa-bell text-east-600"></i> 실시간 알림 센터</h4>
+                                <button onclick="markAllNotificationsRead()" class="text-[10px] text-east-600 font-semibold hover:underline">모두 읽음</button>
+                            </div>
+                            <div id="notif-list-container" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar text-xs"></div>
+                        </div>
+                    </div>
+
                     <div class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">
                         <i class="fa-regular fa-clock text-east-600"></i><span id="header-clock">2026.10.11 (일) 14:00:00</span>
                     </div>
@@ -596,71 +630,106 @@
 
     <!-- ELECTRONIC APPROVAL MODAL -->
     <div id="approval-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[92vh]">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
-                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-signature text-east-600"></i> 전자결재 기안 작성</h3>
+                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-signature text-east-600"></i> 전자결재 기안 작성 (휴가계획서)</h3>
                 <button onclick="closeModal('approval-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="handleApprovalSubmit(event)" class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <form onsubmit="handleApprovalSubmit(event)" class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">결재 문서 양식 <span class="text-red-500">*</span></label>
-                        <select id="approval-type" onchange="toggleApprovalFormType()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium">
-                            <option value="업무일지">업무일지</option>
+                        <label class="block font-bold text-slate-700 mb-1">문서 양식</label>
+                        <select id="approval-type" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium">
                             <option value="휴가계획서">휴가계획서</option>
                         </select>
                     </div>
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">최종 결재자 <span class="text-red-500">*</span></label>
-                        <select id="approval-approver" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium">
-                            <!-- 동적으로 가입 멤버 로드 -->
-                        </select>
+                        <select id="approval-approver" required class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium"></select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">문서 제목 <span class="text-red-500">*</span></label>
+                        <input type="text" id="approval-title" required value="[기안] 휴가원 신청" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">기안 제목 <span class="text-red-500">*</span></label>
-                    <input type="text" id="approval-title" required placeholder="예: [기안] 서버 인프라 확장 건" class="w-full px-4 py-2.5 rounded-xl border border-slate-200">
+                    <label class="block font-bold text-slate-700 mb-1">참조자 선택 (다중)</label>
+                    <div id="approval-cc-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-24 overflow-y-auto space-y-1.5"></div>
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">참조자 (다중 선택)</label>
-                    <div id="approval-cc-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2">
-                        <!-- 동적으로 가입 멤버 체크박스 로드 -->
-                    </div>
-                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-300 shadow-sm overflow-x-auto">
+                    <table class="leave-form-table">
+                        <tr>
+                            <td rowspan="2" style="width: 25%; font-size: 22px; font-weight: 900; letter-spacing: 4px;">
+                                휴 가 원
+                            </td>
+                            <td style="width: 8%; font-weight: bold; background-color: #f8fafc;" rowspan="2">결재</td>
+                            <td style="width: 22%; font-weight: bold; background-color: #f8fafc;">담 당</td>
+                            <td style="width: 22%; font-weight: bold; background-color: #f8fafc;">팀 장</td>
+                            <td style="width: 23%; font-weight: bold; background-color: #f8fafc;">확 인</td>
+                        </tr>
+                        <tr>
+                            <td style="height: 45px;"></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc;">부 &nbsp; 서</td>
+                            <td colspan="4" style="text-align: left; padding-left: 10px;">
+                                <input type="text" id="leave-dept" value="PSU" readonly class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs bg-slate-100 font-bold text-slate-700 cursor-not-allowed">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc;">성 &nbsp; 명</td>
+                            <td colspan="2" style="text-align: left; padding-left: 10px;">
+                                <input type="text" id="leave-name" placeholder="성명 입력" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs" style="background:#fff;">
+                            </td>
+                            <td style="font-weight: bold; background-color: #f8fafc;">생년월일</td>
+                            <td style="text-align: left; padding-left: 10px;">
+                                <input type="text" id="leave-birth" placeholder="예: 950101" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs" style="background:#fff;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc;">기 &nbsp; 간</td>
+                            <td colspan="4" style="text-align: left; padding-left: 10px;">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <input type="date" id="leave-start-date" value="2026-10-15" class="py-1 px-2 text-xs">
+                                    <span>~</span>
+                                    <input type="date" id="leave-end-date" value="2026-10-15" class="py-1 px-2 text-xs">
+                                    <span class="ml-2">( <input type="text" id="leave-days-count" value="1" style="width: 35px; text-align: center; border:1px solid #cbd5e1; border-radius:4px; padding:2px;" /> )일간</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc;">휴가유형</td>
+                            <td colspan="4" style="text-align: left; padding-left: 10px;">
+                                <div class="flex items-center gap-4 py-1">
+                                    <label class="cursor-pointer flex items-center gap-1"><input type="radio" name="leave-type-radio" value="반차" class="text-east-600"> 반차</label>
+                                    <label class="cursor-pointer flex items-center gap-1"><input type="radio" name="leave-type-radio" value="연차" checked class="text-east-600"> 연차</label>
+                                    <label class="cursor-pointer flex items-center gap-1">기타( <input type="text" id="leave-type-etc" placeholder="직접입력" class="px-2 py-0.5 border border-slate-300 rounded text-xs w-28"> )</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc; height: 80px;">사 &nbsp; 유</td>
+                            <td colspan="4" style="text-align: left; padding: 6px;">
+                                <textarea id="leave-reason" placeholder="휴가 사유를 상세히 입력하세요." class="w-full p-2 border border-slate-300 rounded-lg text-xs resize-none h-16"></textarea>
+                            </td>
+                        </tr>
+                    </table>
 
-                <div id="form-fields-worklog" class="space-y-4">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">상세 기안 내용 <span class="text-red-500">*</span></label>
-                        <textarea id="approval-content" rows="6" placeholder="기안 내용을 입력하세요..." class="w-full p-4 rounded-xl border border-slate-200 leading-relaxed"></textarea>
-                    </div>
-                </div>
-
-                <div id="form-fields-leave" class="space-y-4 hidden">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">휴가 구분</label>
-                            <select id="leave-type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">
-                                <option value="연차">연차</option>
-                                <option value="반차(오전)">반차 (오전)</option>
-                                <option value="반차(오후)">반차 (오후)</option>
-                            </select>
+                    <div class="mt-6 text-center text-xs space-y-4 text-slate-800">
+                        <p class="font-medium">위와 같이 휴가원을 제출하오니 재가하여 주시기 바랍니다.</p>
+                        <div class="py-2">
+                            <input type="text" id="leave-submit-date-str" readonly class="text-center border-b border-slate-400 bg-transparent py-1 w-48 font-semibold cursor-not-allowed">
                         </div>
-                        <div class="grid grid-cols-2 gap-1">
-                            <div>
-                                <label class="block font-bold text-slate-700 mb-1">시작일</label>
-                                <input type="date" id="leave-start-date" value="2026-10-15" class="w-full">
-                            </div>
-                            <div>
-                                <label class="block font-bold text-slate-700 mb-1">종료일</label>
-                                <input type="date" id="leave-end-date" value="2026-10-15" class="w-full">
-                            </div>
+                        <div class="flex justify-end items-center gap-2 pr-12 pt-2">
+                            <span class="font-bold">제 출 자 :</span>
+                            <input type="text" id="leave-submitter-name" class="border-b border-slate-400 bg-transparent py-1 w-32 text-center font-bold">
+                            <span class="font-bold">(인)</span>
                         </div>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">사유</label>
-                        <input type="text" id="leave-reason" placeholder="사유 입력" class="w-full px-4 py-2.5 rounded-xl border border-slate-200">
                     </div>
                 </div>
 
@@ -700,9 +769,7 @@
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">참조자 (다중 선택)</label>
-                    <div id="sched-attendees-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2">
-                        <!-- 동적으로 가입 멤버 체크박스 로드 -->
-                    </div>
+                    <div id="sched-attendees-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2"></div>
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">내용</label>
@@ -726,15 +793,11 @@
             <form onsubmit="handleSendMail(event)" class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">받는 사람 <span class="text-red-500">*</span></label>
-                    <select id="mail-to" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white font-medium">
-                        <!-- 동적으로 가입 멤버 로드 -->
-                    </select>
+                    <select id="mail-to" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white font-medium"></select>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">참조 (CC) (다중 선택)</label>
-                    <div id="mail-cc-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2">
-                        <!-- 동적으로 가입 멤버 체크박스 로드 -->
-                    </div>
+                    <div id="mail-cc-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2"></div>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">제목 <span class="text-red-500">*</span></label>
@@ -828,6 +891,7 @@
         let noticeState = JSON.parse(localStorage.getItem('east_noticeState')) || [];
         let approvalState = JSON.parse(localStorage.getItem('east_approvalState')) || [];
         let commuteHistory = JSON.parse(localStorage.getItem('east_commuteHistory')) || [];
+        let notificationState = JSON.parse(localStorage.getItem('east_notificationState')) || [];
 
         function saveAllState() {
             localStorage.setItem('east_registeredUsers', JSON.stringify(registeredUsers));
@@ -836,13 +900,13 @@
             localStorage.setItem('east_noticeState', JSON.stringify(noticeState));
             localStorage.setItem('east_approvalState', JSON.stringify(approvalState));
             localStorage.setItem('east_commuteHistory', JSON.stringify(commuteHistory));
+            localStorage.setItem('east_notificationState', JSON.stringify(notificationState));
         }
 
         let currentDetailEmailId = null;
         let currentDetailApprovalId = null;
         let commuteMode = 'in';
 
-        // 2026년 및 2027년 전체 공휴일/대체공휴일 정의
         const holidays2026 = {
             '01-01': '신정',
             '02-16': '설날 연휴', '02-17': '설날', '02-18': '설날 연휴',
@@ -871,24 +935,18 @@
             '12-25': '성탄절'
         };
 
-        // 전화번호 자동 포맷팅 함수
         function formatPhoneNumber(value) {
             const digits = value.replace(/\D/g, '');
-            if (digits.length <= 3) {
-                return digits;
-            } else if (digits.length <= 7) {
-                return digits.replace(/(\d{3})(\d{1,4})/, '$1-$2');
-            } else if (digits.length <= 11) {
+            if (digits.length <= 3) return digits;
+            else if (digits.length <= 7) return digits.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+            else if (digits.length <= 11) {
                 if (digits.startsWith('02')) {
-                    if (digits.length === 10) {
-                        return digits.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
-                    }
+                    if (digits.length === 10) return digits.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
                     return digits.replace(/(\d{2})(\d{3,4})(\d{4})/, '$1-$2-$3');
                 }
                 return digits.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-            } else {
-                return digits.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
             }
+            return digits.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
         }
 
         function togglePasswordVisibility() {
@@ -933,7 +991,6 @@
             }
             
             const email = `${id}@theeast.com`;
-
             registeredUsers.push({ id, pw, name, phone, email, dept: '일반부서' });
             saveAllState();
             closeModal('signup-modal');
@@ -958,11 +1015,27 @@
             showToast('프로필이 수정되었습니다.', 'success');
         }
 
+        // 계정 삭제 기능 구현
+        function handleDeleteAccount() {
+            if (!currentUser) return;
+            const confirmed = confirm("정말 탈퇴하시겠습니까? 계정과 관련된 데이터가 모두 삭제됩니다.");
+            if (!confirmed) return;
+
+            // 데이터베이스(DB) 및 인증 시스템에서 계정 완전 삭제
+            registeredUsers = registeredUsers.filter(u => u.id !== currentUser.id);
+            saveAllState();
+
+            closeModal('profile-modal');
+            handleLogout();
+            showToast('계정이 성공적으로 삭제되었습니다.', 'danger');
+        }
+
         function updateProfileUI() {
             if(!currentUser) return;
             document.getElementById('sidebar-profile-name').innerText = currentUser.name;
             document.getElementById('sidebar-profile-img').src = currentUser.img || 'https://lh3.googleusercontent.com/d/1dQ9U19nB7Jg4THQ__3gihknJc5FnNf8Q';
             document.getElementById('welcome-name-banner').innerText = `안녕하세요, ${currentUser.name}님! 👋`;
+            document.getElementById('profile-edit-name').value = currentUser.name;
         }
 
         function handleLogout() {
@@ -995,6 +1068,74 @@
                 const fullStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${timeStr}`;
                 if(document.getElementById('header-clock')) document.getElementById('header-clock').innerText = fullStr;
             }, 1000);
+        }
+
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notif-dropdown');
+            dropdown.classList.toggle('hidden');
+            if(!dropdown.classList.contains('hidden')) {
+                renderNotifications();
+            }
+        }
+
+        function handleBodyClick(event) {
+            const dropdown = document.getElementById('notif-dropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function renderNotifications() {
+            if(!currentUser) return;
+            const container = document.getElementById('notif-list-container');
+            const myNotifs = notificationState.filter(n => n.ownerId === currentUser.id);
+
+            const unreadCount = myNotifs.filter(n => !n.read).length;
+            const badge = document.getElementById('notif-badge');
+            if(unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            container.innerHTML = myNotifs.map(n => `
+                <div onclick="handleNotificationClick('${n.id}', '${n.type}', '${n.targetId}')" class="p-2.5 rounded-xl border ${n.read ? 'bg-white border-slate-100 text-slate-500' : 'bg-east-50/60 border-east-200 text-slate-900 font-semibold'} hover:bg-slate-50 cursor-pointer transition-colors flex items-start justify-between gap-2">
+                    <div class="space-y-0.5">
+                        <p class="text-xs">${n.message}</p>
+                        <span class="text-[10px] text-slate-400 block">${n.date}</span>
+                    </div>
+                    ${!n.read ? '<span class="w-2 h-2 rounded-full bg-east-600 shrink-0 mt-1"></span>' : ''}
+                </div>
+            `).join('') || '<div class="p-4 text-center text-slate-400 text-xs">새로운 알림이 없습니다.</div>';
+        }
+
+        function markAllNotificationsRead() {
+            if(!currentUser) return;
+            notificationState.forEach(n => {
+                if(n.ownerId === currentUser.id) n.read = true;
+            });
+            saveAllState();
+            renderNotifications();
+        }
+
+        function handleNotificationClick(notifId, type, targetId) {
+            const notif = notificationState.find(n => n.id == notifId);
+            if(notif) {
+                notif.read = true;
+                saveAllState();
+                renderNotifications();
+            }
+
+            document.getElementById('notif-dropdown').classList.add('hidden');
+
+            if(type === 'mail') {
+                switchTab('mail');
+                openEmailDetail(parseInt(targetId));
+            } else if(type === 'approval_pending' || type === 'approval_cc') {
+                switchTab('approval');
+                openApprovalDetail(parseInt(targetId));
+            }
         }
 
         function openCommuteModal(type) {
@@ -1033,7 +1174,6 @@
             if(!currentUser) return;
             const filterMonth = document.getElementById('commute-filter-month').value;
             const filtered = commuteHistory.filter(r => r.userId === currentUser.id && r.date.startsWith(filterMonth.replace('-', '.')));
-            
             filtered.sort((a, b) => a.date.localeCompare(b.date));
 
             document.getElementById('commute-history-body').innerHTML = filtered.map(r => `
@@ -1065,6 +1205,17 @@
                 populateScheduleFormSelects();
             } else if(id === 'approval-modal') {
                 populateApprovalFormSelects();
+                if(currentUser) {
+                    document.getElementById('leave-name').value = currentUser.name;
+                    document.getElementById('leave-submitter-name').value = currentUser.name;
+                }
+                const now = new Date();
+                const dateStrText = `${now.getFullYear()} 년 ${String(now.getMonth()+1).padStart(2,'0')} 월 ${String(now.getDate()).padStart(2,'0')} 일`;
+                document.getElementById('leave-submit-date-str').value = dateStrText;
+            } else if(id === 'profile-modal') {
+                if(currentUser) {
+                    document.getElementById('profile-edit-name').value = currentUser.name;
+                }
             }
         }
 
@@ -1121,9 +1272,12 @@
                 return u ? u.name : id;
             }).join(', ');
 
+            const subjectVal = document.getElementById('mail-subject').value;
+            const bodyVal = document.getElementById('mail-body').value;
+
             const baseEmailData = {
-                subject: document.getElementById('mail-subject').value,
-                body: document.getElementById('mail-body').value,
+                subject: subjectVal,
+                body: bodyVal,
                 sender: `${currentUser.name}`,
                 recipient: recipientName,
                 cc: checkedCCNames,
@@ -1132,28 +1286,33 @@
                 starred: false
             };
 
-            emailState.unshift({
-                id: Date.now() + 1,
-                ownerId: currentUser.id,
-                folder: 'sent',
-                ...baseEmailData
-            });
+            emailState.unshift({ id: Date.now() + 1, ownerId: currentUser.id, folder: 'sent', ...baseEmailData });
 
+            const inboxMailId = Date.now() + 2;
             if (recipientId) {
-                emailState.unshift({
-                    id: Date.now() + 2,
+                emailState.unshift({ id: inboxMailId, ownerId: recipientId, folder: 'inbox', ...baseEmailData });
+                notificationState.unshift({
+                    id: Date.now() + 99,
                     ownerId: recipientId,
-                    folder: 'inbox',
-                    ...baseEmailData
+                    type: 'mail',
+                    message: `[메일] ${currentUser.name}님으로부터 새로운 메일이 도착했습니다: ${subjectVal}`,
+                    targetId: inboxMailId,
+                    read: false,
+                    date: '방금 전'
                 });
             }
 
             checkedCCIds.forEach((ccId, index) => {
-                emailState.unshift({
-                    id: Date.now() + 3 + index,
+                const ccMailId = Date.now() + 3 + index;
+                emailState.unshift({ id: ccMailId, ownerId: ccId, folder: 'inbox', ...baseEmailData });
+                notificationState.unshift({
+                    id: Date.now() + 200 + index,
                     ownerId: ccId,
-                    folder: 'inbox',
-                    ...baseEmailData
+                    type: 'mail',
+                    message: `[메일 참조] ${currentUser.name}님이 보낸 메일의 참조로 지정되었습니다: ${subjectVal}`,
+                    targetId: ccMailId,
+                    read: false,
+                    date: '방금 전'
                 });
             });
 
@@ -1199,11 +1358,7 @@
 
         function toggleStarMail(id) {
             const mail = emailState.find(m => m.id === id && m.ownerId === currentUser.id);
-            if(mail) {
-                mail.starred = !mail.starred;
-                saveAllState();
-                renderAllViews();
-            }
+            if(mail) { mail.starred = !mail.starred; saveAllState(); renderAllViews(); }
         }
 
         function toggleStarCurrentMail() {
@@ -1250,9 +1405,7 @@
             renderAllViews();
         }
 
-        function onCalendarMonthChange() {
-            renderCalendarGrid();
-        }
+        function onCalendarMonthChange() { renderCalendarGrid(); }
 
         function renderCalendarGrid() {
             const val = document.getElementById('calendar-filter-month').value;
@@ -1268,9 +1421,7 @@
             const container = document.getElementById('calendar-grid-container');
             let html = `<div class="bg-slate-100 py-3 text-red-500">일</div><div class="bg-slate-100 py-3">월</div><div class="bg-slate-100 py-3">화</div><div class="bg-slate-100 py-3">수</div><div class="bg-slate-100 py-3">목</div><div class="bg-slate-100 py-3">금</div><div class="bg-slate-100 py-3 text-blue-500">토</div>`;
             
-            for(let i=0; i<firstDay; i++) {
-                html += `<div class="bg-white min-h-[90px] p-2 text-slate-300"></div>`;
-            }
+            for(let i=0; i<firstDay; i++) { html += `<div class="bg-white min-h-[90px] p-2 text-slate-300"></div>`; }
 
             for(let d=1; d<=lastDate; d++) {
                 const mm = String(month).padStart(2, '0');
@@ -1278,16 +1429,11 @@
                 const dateStr = `${year}-${mm}-${dd}`;
                 const mdKey = `${mm}-${dd}`;
                 
-                // 연도별 공휴일 매핑 동적 선택
                 let holidayName = null;
-                if(year === 2026) {
-                    holidayName = holidays2026[mdKey];
-                } else if(year === 2027) {
-                    holidayName = holidays2027[mdKey];
-                }
+                if(year === 2026) holidayName = holidays2026[mdKey];
+                else if(year === 2027) holidayName = holidays2027[mdKey];
 
                 const dayOfWeek = new Date(year, month - 1, d).getDay();
-                
                 let dayColorClass = 'text-slate-700';
                 if(dayOfWeek === 0 || holidayName) dayColorClass = 'text-red-600 font-bold';
                 else if(dayOfWeek === 6) dayColorClass = 'text-blue-600 font-bold';
@@ -1342,41 +1488,112 @@
             openModal('schedule-detail-modal');
         }
 
-        function toggleApprovalFormType() {
-            const type = document.getElementById('approval-type').value;
-            if(type === '휴가계획서') {
-                document.getElementById('form-fields-worklog').classList.add('hidden');
-                document.getElementById('form-fields-leave').classList.remove('hidden');
-            } else {
-                document.getElementById('form-fields-worklog').classList.remove('hidden');
-                document.getElementById('form-fields-leave').classList.add('hidden');
-            }
-        }
-
         function handleApprovalSubmit(e) {
             e.preventDefault();
             const type = document.getElementById('approval-type').value;
             const title = document.getElementById('approval-title').value;
             const approver = document.getElementById('approval-approver').value;
-            const checkedCC = Array.from(document.querySelectorAll('input[name="approval-cc-user"]:checked')).map(el => el.value).join(', ');
+            const checkedCCNamesArr = Array.from(document.querySelectorAll('input[name="approval-cc-user"]:checked')).map(el => el.value);
+            const checkedCC = checkedCCNamesArr.join(', ');
 
-            let content = '';
-            if(type === '휴가계획서') {
-                const startDate = document.getElementById('leave-start-date').value;
-                const endDate = document.getElementById('leave-end-date').value;
-                content = `[휴가 구분] ${document.getElementById('leave-type').value}\n[휴가 기간] ${startDate} ~ ${endDate}\n[사유] ${document.getElementById('leave-reason').value || '없음'}`;
-            } else {
-                content = document.getElementById('approval-content').value;
+            const dept = 'PSU';
+            const name = document.getElementById('leave-name').value;
+            const birth = document.getElementById('leave-birth').value;
+            const startDate = document.getElementById('leave-start-date').value;
+            const endDate = document.getElementById('leave-end-date').value;
+            const daysCount = document.getElementById('leave-days-count').value;
+            
+            const selectedRadio = document.querySelector('input[name="leave-type-radio"]:checked');
+            let leaveTypeVal = selectedRadio ? selectedRadio.value : '연차';
+            const etcVal = document.getElementById('leave-type-etc').value;
+            if(leaveTypeVal === '기타' && etcVal) leaveTypeVal = `기타(${etcVal})`;
+            
+            const reason = document.getElementById('leave-reason').value;
+            const submitDateStr = document.getElementById('leave-submit-date-str').value;
+
+            const htmlContent = `
+                <div class="overflow-x-auto">
+                    <table class="leave-form-table" style="width:100%; border:1px solid #000;">
+                        <tr>
+                            <td rowspan="2" style="width: 25%; font-size: 20px; font-weight: 950; letter-spacing: 3px; border:1px solid #000;">휴 가 원</td>
+                            <td style="width: 8%; font-weight: bold; background-color: #f8fafc; border:1px solid #000;" rowspan="2">결재</td>
+                            <td style="width: 22%; font-weight: bold; background-color: #f8fafc; border:1px solid #000;">담 당</td>
+                            <td style="width: 22%; font-weight: bold; background-color: #f8fafc; border:1px solid #000;">팀 장</td>
+                            <td style="width: 23%; font-weight: bold; background-color: #f8fafc; border:1px solid #000;">확 인</td>
+                        </tr>
+                        <tr>
+                            <td style="height: 35px; border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc; border:1px solid #000;">부 &nbsp; 서</td>
+                            <td colspan="4" style="text-align: left; padding-left: 10px; border:1px solid #000;">${dept}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc; border:1px solid #000;">성 &nbsp; 명</td>
+                            <td colspan="2" style="text-align: left; padding-left: 10px; border:1px solid #000;">${name}</td>
+                            <td style="font-weight: bold; background-color: #f8fafc; border:1px solid #000;">생년월일</td>
+                            <td style="text-align: left; padding-left: 10px; border:1px solid #000;">${birth}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc; border:1px solid #000;">기 &nbsp; 간</td>
+                            <td colspan="4" style="text-align: left; padding-left: 10px; border:1px solid #000;">${startDate} ~ ${endDate} &nbsp; ( ${daysCount} )일간</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc; border:1px solid #000;">휴가유형</td>
+                            <td colspan="4" style="text-align: left; padding-left: 10px; border:1px solid #000;">${leaveTypeVal}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8fafc; border:1px solid #000;">사 &nbsp; 유</td>
+                            <td colspan="4" style="text-align: left; padding: 8px; border:1px solid #000; min-height: 50px;">${reason || '없음'}</td>
+                        </tr>
+                    </table>
+                    <div class="mt-4 text-center text-xs space-y-2 text-slate-800">
+                        <p class="font-medium">위와 같이 휴가원을 제출하오니 재가하여 주시기 바랍니다.</p>
+                        <p class="font-semibold pt-1">${submitDateStr}</p>
+                        <p class="text-right font-bold pr-8">제 출 자 : ${name} (인)</p>
+                    </div>
+                </div>
+            `;
+
+            const newApprovalId = Date.now();
+            approvalState.unshift({
+                id: newApprovalId, ownerId: currentUser.id, title, category: type, author: currentUser.name,
+                date: '2026.10.11', status: '대기', approver, cc: checkedCC || '없음', content: htmlContent
+            });
+
+            const approverUser = registeredUsers.find(u => u.name === approver);
+            if(approverUser) {
+                notificationState.unshift({
+                    id: Date.now() + 1,
+                    ownerId: approverUser.id,
+                    type: 'approval_pending',
+                    message: `[결재 대기] ${currentUser.name}님이 요청하신 "${title}" 결재 대기 중인 문서가 있습니다.`,
+                    targetId: newApprovalId,
+                    read: false,
+                    date: '방금 전'
+                });
             }
 
-            approvalState.unshift({
-                id: Date.now(), ownerId: currentUser.id, title, category: type, author: currentUser.name,
-                date: '2026.10.11', status: '대기', approver, cc: checkedCC || '없음', content
+            checkedCCNamesArr.forEach((ccName, idx) => {
+                const ccUser = registeredUsers.find(u => u.name === ccName);
+                if(ccUser) {
+                    notificationState.unshift({
+                        id: Date.now() + 50 + idx,
+                        ownerId: ccUser.id,
+                        type: 'approval_cc',
+                        message: `[문서 참조] "${title}" 참조 문서가 도착했습니다.`,
+                        targetId: newApprovalId,
+                        read: false,
+                        date: '방금 전'
+                    });
+                }
             });
 
             saveAllState();
             closeModal('approval-modal');
-            showToast('결재 상신되었습니다. (대기중 상태로 등록)', 'success');
+            showToast('휴가계획서가 결재 상신되었습니다.', 'success');
             renderApprovalList();
             e.target.reset();
         }
@@ -1428,7 +1645,7 @@
             document.getElementById('detail-author').innerText = item.author;
             document.getElementById('detail-date').innerText = item.date;
             document.getElementById('detail-approver').innerText = item.approver;
-            document.getElementById('detail-content').innerText = item.content;
+            document.getElementById('detail-content').innerHTML = item.content;
             document.getElementById('detail-cc').innerText = item.cc || '없음';
 
             const statusBadge = document.getElementById('detail-status-badge');
@@ -1437,8 +1654,18 @@
             else if(item.status === '결재완료') statusBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-bold';
             else if(item.status === '반려') statusBadge.className = 'px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-bold';
 
+            const deleteBtnContainer = document.getElementById('detail-delete-button-container');
+            if(currentUser && item.ownerId === currentUser.id) {
+                deleteBtnContainer.innerHTML = `
+                    <button onclick="deleteApprovalCurrent()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> 기안 삭제
+                    </button>
+                `;
+            } else {
+                deleteBtnContainer.innerHTML = '';
+            }
+
             const actionContainer = document.getElementById('detail-action-buttons');
-            
             if (item.status === '대기' && item.approver === currentUser.name) {
                 actionContainer.innerHTML = `
                     <div class="flex gap-2">
@@ -1556,6 +1783,7 @@
             renderApprovalList();
             renderNoticeList();
             renderAddressBook();
+            renderNotifications();
         }
     </script>
 </body>
