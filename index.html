@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE EAST - 사내 포털 그룹웨어</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        east: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#172554'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .file-upload-wrapper input[type="file"] {
+            display: none;
+        }
+
+        input[type="date"], input[type="month"], input[type="time"] {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.875rem;
+            font-size: 0.75rem;
+            font-family: inherit;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        input[type="date"]:hover, input[type="month"]:hover, input[type="time"]:hover {
+            border-color: #93c5fd;
+            background-color: #f8fafc;
+        }
+        input[type="date"]:focus, input[type="month"]:focus, input[type="time"]:focus {
+            border-color: #2563eb;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="month"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(24%) sepia(85%) saturate(2425%) hue-rotate(217deg) brightness(97%) contrast(96%);
+            opacity: 0.8;
+            padding: 2px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        input[type="month"]::-webkit-calendar-picker-indicator:hover,
+        input[type="time"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans antialiased bg-slate-50 relative overflow-x-hidden">
+
+    <!-- Toast Notification View -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- 1. LOGIN SCREEN CONTAINER -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-east-950 p-4 transition-opacity duration-300">
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col">
+            <div class="p-8 bg-gradient-to-r from-east-700 via-east-600 to-east-800 text-white text-center relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mx-auto mb-4 border border-white/30 shadow-inner">
+                    <span class="text-3xl font-extrabold tracking-wider text-white">E</span>
+                </div>
+                <h2 class="text-2xl font-black tracking-tight">THE EAST</h2>
+                <p class="text-xs text-east-100 mt-1 font-medium tracking-widest uppercase">Intranet Portal Gateway</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)" class="p-8 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">아이디 또는 이메일</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="login-id" required placeholder="아이디 또는 이메일 입력" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-east-600 focus:bg-white transition-all font-medium">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">비밀번호</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="password" id="login-pw" required placeholder="비밀번호" class="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-east-600 focus:bg-white transition-all font-medium">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none">
+                            <i id="password-toggle-icon" class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer text-slate-600 select-none">
+                        <input type="checkbox" id="remember-me" checked class="w-4 h-4 rounded text-east-600 focus:ring-east-500 border-slate-300">
+                        <span class="font-medium">로그인 상태 유지</span>
+                    </label>
+                    <button type="button" onclick="openModal('signup-modal')" class="text-east-600 font-semibold hover:underline">회원가입</button>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 px-4 bg-east-600 hover:bg-east-700 active:scale-[0.99] text-white font-bold text-sm rounded-xl shadow-lg shadow-east-600/30 transition-all flex items-center justify-center gap-2 mt-2">
+                    <span>로그인</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div id="signup-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col">
+            <div class="p-6 bg-gradient-to-r from-east-700 to-east-600 text-white flex items-center justify-between">
+                <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-user-plus"></i> 사내 포털 회원가입</h3>
+                <button onclick="closeModal('signup-modal')" class="text-white/80 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSignup(event)" class="p-6 space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1 uppercase">이름</label>
+                    <input type="text" id="signup-name" required placeholder="성함" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1 uppercase">전화번호</label>
+                    <input type="text" id="signup-phone" required maxlength="13" oninput="this.value = formatPhoneNumber(this.value)" placeholder="010-1234-5678" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1 uppercase">아이디</label>
+                    <div class="flex items-center">
+                        <input type="text" id="signup-id" required placeholder="아이디 입력" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-l-xl">
+                        <span class="px-3 py-2.5 bg-slate-200 text-slate-600 border border-l-0 border-slate-200 rounded-r-xl font-medium">@theeast.com</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1">입력하신 아이디로 전용 이메일이 자동 생성됩니다.</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1 uppercase">비밀번호</label>
+                    <input type="password" id="signup-pw" required placeholder="비밀번호" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('signup-modal')" class="px-4 py-2.5 rounded-xl font-semibold text-slate-600">취소</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">가입 완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PROFILE EDIT MODAL -->
+    <div id="profile-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-user-pen text-east-600"></i> 프로필 정보 수정</h3>
+                <button onclick="closeModal('profile-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleProfileUpdate(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">이름</label>
+                    <input type="text" id="profile-edit-name" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200">
+                </div>
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('profile-modal')" class="px-4 py-2.5 rounded-xl text-slate-600 font-semibold">취소</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MEMBER DETAIL MODAL -->
+    <div id="member-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-id-card text-east-600"></i> 임직원 상세 정보</h3>
+                <button onclick="closeModal('member-detail-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-3 text-xs text-slate-700">
+                <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+                    <div class="w-12 h-12 rounded-full bg-east-100 text-east-700 flex items-center justify-center font-bold text-lg" id="member-detail-initial"></div>
+                    <div>
+                        <h4 id="member-detail-name" class="font-bold text-slate-900 text-sm"></h4>
+                    </div>
+                </div>
+                <p><strong>이메일:</strong> <span id="member-detail-email"></span></p>
+                <p><strong>전화번호:</strong> <span id="member-detail-phone"></span></p>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onclick="closeModal('member-detail-modal')" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-semibold">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMUTE TIME SELECT MODAL -->
+    <div id="commute-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 id="commute-modal-title" class="font-bold text-slate-900 text-sm">출근 시간 설정</h3>
+                <button onclick="closeModal('commute-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleCommuteSubmit(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">날짜</label>
+                    <input type="date" id="commute-input-date" required class="w-full">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">시간</label>
+                    <input type="time" id="commute-input-time" required class="w-full">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('commute-modal')" class="px-4 py-2.5 rounded-xl text-slate-600">취소</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">확인</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCHEDULE DETAIL MODAL -->
+    <div id="schedule-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-900 text-base" id="sched-detail-title">일정 제목</h3>
+                <button onclick="closeModal('schedule-detail-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-3 text-xs text-slate-700">
+                <p><strong>날짜 및 시간:</strong> <span id="sched-detail-datetime"></span></p>
+                <p><strong>장소:</strong> <span id="sched-detail-location"></span></p>
+                <p><strong>참조/참석자:</strong> <span id="sched-detail-attendees"></span></p>
+                <div class="pt-2 border-t border-slate-100">
+                    <p class="font-bold text-slate-400 mb-1">내용</p>
+                    <p id="sched-detail-desc" class="bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed"></p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onclick="closeModal('schedule-detail-modal')" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-semibold">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTICE DETAIL MODAL -->
+    <div id="notice-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <h3 id="notice-detail-title" class="font-bold text-slate-900 text-base">공지 제목</h3>
+                <button onclick="closeModal('notice-detail-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
+                <div class="flex items-center justify-between text-slate-400 pb-3 border-b border-slate-100">
+                    <span id="notice-detail-author">작성자: 관리자</span>
+                    <span id="notice-detail-date">날짜: 2026.10.11</span>
+                </div>
+                <div id="notice-detail-body" class="text-slate-700 leading-relaxed whitespace-pre-line min-h-[120px]"></div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onclick="closeModal('notice-detail-modal')" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-semibold">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPROVAL DETAIL MODAL -->
+    <div id="approval-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span id="detail-category-badge" class="px-2.5 py-1 text-xs font-bold bg-east-100 text-east-700 rounded-md">업무일지</span>
+                    <h3 class="font-bold text-slate-900 text-base" id="detail-title">문서 제목</h3>
+                </div>
+                <button onclick="closeModal('approval-detail-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1 text-xs">
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="grid grid-cols-4 border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold text-center py-2">
+                        <div>기안자</div>
+                        <div>상태</div>
+                        <div>기안일자</div>
+                        <div>결재자</div>
+                    </div>
+                    <div class="grid grid-cols-4 text-center py-2.5 font-medium text-slate-800">
+                        <div id="detail-author">-</div>
+                        <div><span id="detail-status-badge" class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-bold">대기</span></div>
+                        <div id="detail-date">-</div>
+                        <div id="detail-approver">-</div>
+                    </div>
+                </div>
+
+                <div id="detail-cc-wrapper" class="bg-white p-3 rounded-xl border border-slate-200 flex items-center gap-2">
+                    <span class="font-bold text-slate-500">참조자:</span>
+                    <span id="detail-cc" class="text-slate-700 font-medium">없음</span>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                    <p class="font-bold text-slate-400 uppercase tracking-wider">상세 내용</p>
+                    <div id="detail-content" class="text-slate-700 leading-relaxed whitespace-pre-line min-h-[120px]"></div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+                <button onclick="deleteApprovalCurrent()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i> 기안 삭제
+                </button>
+                <div class="flex gap-2" id="detail-action-buttons"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP PORTAL CONTAINER -->
+    <div id="app-portal" class="h-full w-full flex text-slate-800 font-sans hidden">
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 z-30 shrink-0 absolute md:relative inset-y-0 -left-64 md:left-0 shadow-xl md:shadow-none">
+            <div class="h-16 flex items-center justify-between px-6 bg-slate-950/50 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-east-700 to-east-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-east-500/20">E</div>
+                    <div>
+                        <span class="text-lg font-extrabold tracking-wider text-white">THE EAST</span>
+                        <span class="block text-[10px] text-east-400 font-medium tracking-widest uppercase">Intranet Portal</span>
+                    </div>
+                </div>
+                <button id="close-sidebar-btn" class="md:hidden text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-4 mx-3 my-3 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition-colors" onclick="openModal('profile-modal')" title="프로필 수정">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="relative shrink-0">
+                        <img id="sidebar-profile-img" src="https://lh3.googleusercontent.com/d/1dQ9U19nB7Jg4THQ__3gihknJc5FnNf8Q" alt="프로필" class="w-10 h-10 rounded-full object-cover ring-2 ring-east-500">
+                        <span class="w-3 h-3 bg-emerald-500 border-2 border-slate-800 rounded-full absolute bottom-0 right-0"></span>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h4 id="sidebar-profile-name" class="text-sm font-semibold text-white truncate"></h4>
+                    </div>
+                </div>
+                <i class="fa-solid fa-pen text-slate-400 text-xs"></i>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-white bg-east-600 shadow-md shadow-east-600/30">
+                    <i class="fa-solid fa-house w-5 text-center shrink-0"></i><span class="truncate">대시보드</span>
+                </button>
+                <button onclick="switchTab('mail')" id="nav-mail" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-envelope w-5 text-center shrink-0"></i><span class="truncate flex-1 text-left">전자메일</span>
+                </button>
+                <button onclick="switchTab('commute')" id="nav-commute" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center shrink-0"></i><span class="truncate">출퇴근 기록부</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-calendar-days w-5 text-center shrink-0"></i><span class="truncate">일정 관리</span>
+                </button>
+                <button onclick="switchTab('approval')" id="nav-approval" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-file-signature w-5 text-center shrink-0"></i><span class="truncate flex-1 text-left">전자결재</span>
+                </button>
+                <button onclick="switchTab('addressbook')" id="nav-addressbook" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-address-book w-5 text-center shrink-0"></i><span class="truncate">주소록</span>
+                </button>
+                <button onclick="switchTab('notice')" id="nav-notice" class="nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60">
+                    <i class="fa-solid fa-bullhorn w-5 text-center shrink-0"></i><span class="truncate">공지사항</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area Wrapper -->
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50">
+            <header class="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between shrink-0 z-10 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <button id="open-sidebar-btn" class="md:hidden text-slate-600 hover:text-slate-900 focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
+                    <h1 id="page-title" class="text-xl font-bold text-slate-900">대시보드</h1>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-5">
+                    <div class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">
+                        <i class="fa-regular fa-clock text-east-600"></i><span id="header-clock">2026.10.11 (일) 14:00:00</span>
+                    </div>
+                    <button onclick="handleLogout()" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors text-xs font-bold border border-slate-200 hover:border-red-200">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline">로그아웃</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8 space-y-6">
+                
+                <!-- 1. DASHBOARD TAB -->
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <div class="bg-gradient-to-r from-east-800 via-east-600 to-blue-600 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-east-700/10 relative overflow-hidden">
+                        <div class="relative z-10 space-y-2">
+                            <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold tracking-wide">THE EAST 그룹웨어</span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold" id="welcome-name-banner">안녕하세요! 👋</h2>
+                            <p class="text-east-100 text-sm max-w-xl">오늘도 원활하고 스마트한 업무를 지원합니다.</p>
+                        </div>
+                        <i class="fa-solid fa-building-user absolute -right-4 -bottom-6 text-9xl text-white/10 pointer-events-none"></i>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-envelope text-east-600"></i> 받은 메일함</span>
+                                    <button onclick="switchTab('mail')" class="text-xs text-east-600 font-semibold hover:underline">더보기</button>
+                                </div>
+                                <div class="space-y-2.5" id="dash-mail-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-bullhorn text-amber-500"></i> 최신 공지사항</span>
+                                    <button onclick="switchTab('notice')" class="text-xs text-east-600 font-semibold hover:underline">더보기</button>
+                                </div>
+                                <div class="space-y-2.5" id="dash-notice-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-calendar-days text-emerald-500"></i> 주요 일정</span>
+                                    <button onclick="switchTab('calendar')" class="text-xs text-east-600 font-semibold hover:underline">더보기</button>
+                                </div>
+                                <div class="space-y-2.5" id="dash-schedule-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. MAIL TAB -->
+                <div id="tab-mail" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[620px]">
+                        <div class="w-full md:w-60 p-4 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 space-y-4 shrink-0">
+                            <button onclick="openMailComposer()" class="w-full py-3 px-4 rounded-xl bg-east-600 hover:bg-east-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md">
+                                <i class="fa-solid fa-pen-to-square"></i> 메일 쓰기
+                            </button>
+                            
+                            <div class="space-y-1 text-sm font-medium text-slate-600">
+                                <button onclick="filterMailFolder('all')" id="folder-all" class="mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+                                    <div class="flex items-center gap-2.5"><i class="fa-solid fa-envelope-open-text w-5 text-center"></i><span>전체메일함</span></div>
+                                </button>
+                                <button onclick="filterMailFolder('inbox')" id="folder-inbox" class="mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-east-100 text-east-700 font-bold transition-colors">
+                                    <div class="flex items-center gap-2.5"><i class="fa-solid fa-inbox w-5 text-center"></i><span>받은메일함</span></div>
+                                </button>
+                                <button onclick="filterMailFolder('sent')" id="folder-sent" class="mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+                                    <div class="flex items-center gap-2.5"><i class="fa-regular fa-paper-plane w-5 text-center"></i><span>보낸메일함</span></div>
+                                </button>
+                                <button onclick="filterMailFolder('starred')" id="folder-starred" class="mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+                                    <div class="flex items-center gap-2.5"><i class="fa-solid fa-star w-5 text-center text-amber-400"></i><span>중요메일함</span></div>
+                                </button>
+                                <button onclick="filterMailFolder('trash')" id="folder-trash" class="mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+                                    <div class="flex items-center gap-2.5"><i class="fa-regular fa-trash-can w-5 text-center"></i><span>휴지통</span></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 flex flex-col min-w-0">
+                            <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-4 flex-wrap">
+                                <div class="text-xs text-slate-400 font-medium">현재 위치: <span id="mail-folder-title" class="font-bold text-slate-800">받은메일함</span></div>
+                            </div>
+                            <div class="divide-y divide-slate-100 overflow-y-auto max-h-[520px] custom-scrollbar" id="mail-list-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. COMMUTE TAB -->
+                <div id="tab-commute" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base">출퇴근 기록 관리</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">날짜별 출근 및 퇴근 시간을 간편하게 설정하세요.</p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="openCommuteModal('in')" class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-east-600 hover:bg-east-700 text-white font-bold text-xs shadow-sm">출근 시간 설정</button>
+                            <button onclick="openCommuteModal('out')" class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs shadow-sm">퇴근 시간 설정</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <h3 class="font-bold text-slate-900">실시간 출퇴근 기록부</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-slate-600">조회 년/월 :</span>
+                                <input type="month" id="commute-filter-month" value="2026-10" onchange="renderCommuteHistory()">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase border-b border-slate-100">
+                                    <tr>
+                                        <th class="p-4">날짜</th>
+                                        <th class="p-4">출근 시간</th>
+                                        <th class="p-4">퇴근 시간</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="commute-history-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. CALENDAR TAB -->
+                <div id="tab-calendar" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <h3 id="calendar-title-heading" class="text-xl font-bold text-slate-900">2026년 10월 캘린더</h3>
+                                <input type="month" id="calendar-filter-month" value="2026-10" onchange="onCalendarMonthChange()">
+                            </div>
+                            <button onclick="openModal('schedule-modal')" class="px-4 py-2 bg-east-600 hover:bg-east-700 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-calendar-plus"></i> 새 일정 등록
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-px bg-slate-200 rounded-xl overflow-hidden text-center text-xs font-semibold text-slate-600" id="calendar-grid-container">
+                            <div class="bg-slate-100 py-3 text-red-500">일</div>
+                            <div class="bg-slate-100 py-3">월</div>
+                            <div class="bg-slate-100 py-3">화</div>
+                            <div class="bg-slate-100 py-3">수</div>
+                            <div class="bg-slate-100 py-3">목</div>
+                            <div class="bg-slate-100 py-3">금</div>
+                            <div class="bg-slate-100 py-3 text-blue-500">토</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. APPROVAL TAB -->
+                <div id="tab-approval" class="tab-content hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex gap-1 bg-slate-200/70 p-1 rounded-xl w-full sm:w-auto">
+                            <button onclick="filterApprovalTab('all')" id="approval-tab-all" class="approval-sub-tab px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm">전체</button>
+                            <button onclick="filterApprovalTab('대기')" id="approval-tab-대기" class="approval-sub-tab px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900">대기중</button>
+                            <button onclick="filterApprovalTab('결재완료')" id="approval-tab-결재완료" class="approval-sub-tab px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900">결재완료</button>
+                            <button onclick="filterApprovalTab('반려')" id="approval-tab-반려" class="approval-sub-tab px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900">반려</button>
+                        </div>
+                        <button onclick="openModal('approval-modal')" class="px-4 py-2.5 bg-east-600 text-white rounded-xl text-xs font-bold hover:bg-east-700 shadow-sm w-full sm:w-auto">새 결재 기안</button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="divide-y divide-slate-100" id="approval-list-container"></div>
+                    </div>
+                </div>
+
+                <!-- 5-2. ADDRESS BOOK TAB -->
+                <div id="tab-addressbook" class="tab-content hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-address-book text-east-600"></i> 사내 주소록 (전체 임직원 목록)</h3>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 font-semibold uppercase border-b border-slate-100">
+                                    <tr>
+                                        <th class="p-4">이름</th>
+                                        <th class="p-4">이메일</th>
+                                        <th class="p-4">전화번호</th>
+                                        <th class="p-4">상세보기</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="address-book-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. NOTICE TAB -->
+                <div id="tab-notice" class="tab-content hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-900">사내 공지사항</h3>
+                        <button onclick="openModal('notice-modal')" class="px-4 py-2 bg-east-600 text-white rounded-xl text-xs font-bold hover:bg-east-700">공지 작성</button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-6">
+                        <div class="space-y-4" id="notice-list-container"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ELECTRONIC APPROVAL MODAL -->
+    <div id="approval-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-signature text-east-600"></i> 전자결재 기안 작성</h3>
+                <button onclick="closeModal('approval-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleApprovalSubmit(event)" class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">결재 문서 양식 <span class="text-red-500">*</span></label>
+                        <select id="approval-type" onchange="toggleApprovalFormType()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium">
+                            <option value="업무일지">업무일지</option>
+                            <option value="휴가계획서">휴가계획서</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">최종 결재자 <span class="text-red-500">*</span></label>
+                        <select id="approval-approver" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium">
+                            <!-- 동적으로 가입 멤버 로드 -->
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">기안 제목 <span class="text-red-500">*</span></label>
+                    <input type="text" id="approval-title" required placeholder="예: [기안] 서버 인프라 확장 건" class="w-full px-4 py-2.5 rounded-xl border border-slate-200">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">참조자 (다중 선택)</label>
+                    <div id="approval-cc-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2">
+                        <!-- 동적으로 가입 멤버 체크박스 로드 -->
+                    </div>
+                </div>
+
+                <div id="form-fields-worklog" class="space-y-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">상세 기안 내용 <span class="text-red-500">*</span></label>
+                        <textarea id="approval-content" rows="6" placeholder="기안 내용을 입력하세요..." class="w-full p-4 rounded-xl border border-slate-200 leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <div id="form-fields-leave" class="space-y-4 hidden">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">휴가 구분</label>
+                            <select id="leave-type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">
+                                <option value="연차">연차</option>
+                                <option value="반차(오전)">반차 (오전)</option>
+                                <option value="반차(오후)">반차 (오후)</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">시작일</label>
+                                <input type="date" id="leave-start-date" value="2026-10-15" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">종료일</label>
+                                <input type="date" id="leave-end-date" value="2026-10-15" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">사유</label>
+                        <input type="text" id="leave-reason" placeholder="사유 입력" class="w-full px-4 py-2.5 rounded-xl border border-slate-200">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('approval-modal')" class="px-4 py-2.5 rounded-xl text-slate-600">취소</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">결재 상신</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW SCHEDULE MODAL -->
+    <div id="schedule-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-900 text-sm">새 일정 등록</h3>
+                <button onclick="closeModal('schedule-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleScheduleSubmit(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">제목</label>
+                    <input id="sched-title" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">날짜</label>
+                        <input id="sched-date" type="date" value="2026-10-11" required class="w-full">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">시간</label>
+                        <input id="sched-time" type="time" value="10:00" required class="w-full">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">장소</label>
+                    <input id="sched-location" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">참조자 (다중 선택)</label>
+                    <div id="sched-attendees-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2">
+                        <!-- 동적으로 가입 멤버 체크박스 로드 -->
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">내용</label>
+                    <textarea id="sched-desc" rows="3" class="w-full p-3 rounded-xl border border-slate-200"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('schedule-modal')" class="px-4 py-2 text-slate-600">취소</button>
+                    <button type="submit" class="px-5 py-2 bg-east-600 text-white rounded-xl font-semibold">등록</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIL COMPOSER MODAL -->
+    <div id="mail-compose-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-paper-plane text-east-600"></i> 새 메일 작성</h3>
+                <button onclick="closeModal('mail-compose-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSendMail(event)" class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">받는 사람 <span class="text-red-500">*</span></label>
+                    <select id="mail-to" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white font-medium">
+                        <!-- 동적으로 가입 멤버 로드 -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">참조 (CC) (다중 선택)</label>
+                    <div id="mail-cc-checkboxes" class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-32 overflow-y-auto space-y-2">
+                        <!-- 동적으로 가입 멤버 체크박스 로드 -->
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">제목 <span class="text-red-500">*</span></label>
+                    <input type="text" id="mail-subject" required placeholder="제목" class="w-full px-4 py-2.5 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">첨부파일</label>
+                    <div class="file-upload-wrapper flex items-center gap-3">
+                        <label for="mail-file" class="cursor-pointer px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 font-semibold transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-paperclip text-east-600"></i> 파일 선택
+                        </label>
+                        <span id="file-chosen-name" class="text-slate-400 italic">선택된 파일 없음</span>
+                        <input type="file" id="mail-file" onchange="document.getElementById('file-chosen-name').innerText = this.files[0] ? this.files[0].name : '선택된 파일 없음'">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">내용 <span class="text-red-500">*</span></label>
+                    <textarea id="mail-body" rows="5" required placeholder="내용..." class="w-full p-4 rounded-xl border border-slate-200 leading-relaxed"></textarea>
+                </div>
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('mail-compose-modal')" class="px-4 py-2.5 rounded-xl text-slate-600">취소</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-east-600 text-white font-semibold shadow-md">발송</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EMAIL DETAIL MODAL -->
+    <div id="email-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleStarCurrentMail()" id="detail-star-btn" class="text-slate-300 hover:text-amber-400 text-lg"><i class="fa-solid fa-star"></i></button>
+                    <h3 id="email-detail-subject" class="font-bold text-slate-900 text-lg truncate">메일 제목</h3>
+                </div>
+                <button onclick="closeModal('email-detail-modal')" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div>
+                        <span class="font-bold text-slate-900 block" id="email-detail-sender">보낸사람</span>
+                        <span class="text-slate-500 mt-0.5 block" id="email-detail-recipient">받는사람</span>
+                    </div>
+                    <span id="email-detail-date" class="text-slate-400">2026.10.11</span>
+                </div>
+                <div id="email-detail-cc" class="text-slate-500 hidden"><strong>참조:</strong> <span></span></div>
+                <div id="email-detail-file" class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-slate-600 hidden">
+                    <i class="fa-solid fa-paperclip text-east-600"></i> 첨부파일: <span></span>
+                </div>
+                <div id="email-detail-body" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line min-h-[140px]"></div>
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                <button onclick="deleteCurrentEmail()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold">메일 삭제</button>
+                <button onclick="closeModal('email-detail-modal')" class="px-4 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-semibold">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTICE MODAL -->
+    <div id="notice-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-900 text-sm">공지 작성</h3>
+                <button onclick="closeModal('notice-modal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleNoticeSubmit(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">제목</label>
+                    <input id="notice-title" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">내용</label>
+                    <textarea id="notice-content" rows="4" required class="w-full p-3 rounded-xl border border-slate-200"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('notice-modal')" class="px-4 py-2 text-slate-600">취소</button>
+                    <button type="submit" class="px-5 py-2 bg-east-600 text-white rounded-xl font-semibold">등록</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentFolder = 'inbox';
+        let currentApprovalTab = 'all';
+        let currentUser = null;
+        
+        let registeredUsers = JSON.parse(localStorage.getItem('east_registeredUsers')) || [];
+        let emailState = JSON.parse(localStorage.getItem('east_emailState')) || [];
+        let scheduleState = JSON.parse(localStorage.getItem('east_scheduleState')) || [];
+        let noticeState = JSON.parse(localStorage.getItem('east_noticeState')) || [];
+        let approvalState = JSON.parse(localStorage.getItem('east_approvalState')) || [];
+        let commuteHistory = JSON.parse(localStorage.getItem('east_commuteHistory')) || [];
+
+        function saveAllState() {
+            localStorage.setItem('east_registeredUsers', JSON.stringify(registeredUsers));
+            localStorage.setItem('east_emailState', JSON.stringify(emailState));
+            localStorage.setItem('east_scheduleState', JSON.stringify(scheduleState));
+            localStorage.setItem('east_noticeState', JSON.stringify(noticeState));
+            localStorage.setItem('east_approvalState', JSON.stringify(approvalState));
+            localStorage.setItem('east_commuteHistory', JSON.stringify(commuteHistory));
+        }
+
+        let currentDetailEmailId = null;
+        let currentDetailApprovalId = null;
+        let commuteMode = 'in';
+
+        // 2026년 및 2027년 전체 공휴일/대체공휴일 정의
+        const holidays2026 = {
+            '01-01': '신정',
+            '02-16': '설날 연휴', '02-17': '설날', '02-18': '설날 연휴',
+            '03-01': '3·1절', '03-02': '대체공휴일',
+            '05-05': '어린이날',
+            '05-24': '부처님오신날', '05-25': '대체공휴일',
+            '06-06': '현충일',
+            '08-15': '광복절', '08-17': '대체공휴일',
+            '09-24': '추석 연휴', '09-25': '추석', '09-26': '추석 연휴',
+            '10-03': '개천절', '10-05': '대체공휴일',
+            '10-09': '한글날',
+            '12-25': '성탄절'
+        };
+
+        const holidays2027 = {
+            '01-01': '신정',
+            '02-06': '설날 연휴', '02-07': '설날', '02-08': '설날 연휴', '02-09': '대체공휴일',
+            '03-01': '3·1절',
+            '05-05': '어린이날',
+            '05-13': '부처님오신날',
+            '06-06': '현충일', '06-07': '대체공휴일',
+            '08-15': '광복절', '08-16': '대체공휴일',
+            '09-14': '추석 연휴', '09-15': '추석', '09-16': '추석 연휴',
+            '10-03': '개천절', '10-04': '대체공휴일',
+            '10-09': '한글날', '10-11': '대체공휴일',
+            '12-25': '성탄절'
+        };
+
+        // 전화번호 자동 포맷팅 함수
+        function formatPhoneNumber(value) {
+            const digits = value.replace(/\D/g, '');
+            if (digits.length <= 3) {
+                return digits;
+            } else if (digits.length <= 7) {
+                return digits.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+            } else if (digits.length <= 11) {
+                if (digits.startsWith('02')) {
+                    if (digits.length === 10) {
+                        return digits.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                    }
+                    return digits.replace(/(\d{2})(\d{3,4})(\d{4})/, '$1-$2-$3');
+                }
+                return digits.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+            } else {
+                return digits.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const pwInput = document.getElementById('login-pw');
+            const toggleIcon = document.getElementById('password-toggle-icon');
+            if (pwInput.type === 'password') {
+                pwInput.type = 'text';
+                toggleIcon.className = 'fa-solid fa-eye-slash text-sm';
+            } else {
+                pwInput.type = 'password';
+                toggleIcon.className = 'fa-solid fa-eye text-sm';
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const inputVal = document.getElementById('login-id').value.trim();
+            const pwVal = document.getElementById('login-pw').value;
+            
+            const found = registeredUsers.find(u => (u.id === inputVal || u.email === inputVal) && u.pw === pwVal);
+            if (!found) { showToast('등록되지 않은 아이디이거나 비밀번호가 올바르지 않습니다.', 'danger'); return; }
+            
+            currentUser = { ...found };
+            updateProfileUI();
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-portal').classList.remove('hidden');
+            showToast(`${currentUser.name}님 환영합니다!`, 'success');
+            startLiveClock();
+            renderAllViews();
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const phone = document.getElementById('signup-phone').value;
+            const id = document.getElementById('signup-id').value.trim();
+            const pw = document.getElementById('signup-pw').value;
+
+            if(registeredUsers.some(u => u.id === id)) { 
+                showToast('이미 사용 중인 아이디입니다.', 'danger'); 
+                return; 
+            }
+            
+            const email = `${id}@theeast.com`;
+
+            registeredUsers.push({ id, pw, name, phone, email, dept: '일반부서' });
+            saveAllState();
+            closeModal('signup-modal');
+            showToast('회원가입이 완료되었습니다. 로그인해주세요.', 'success');
+            document.getElementById('login-id').value = id;
+            document.getElementById('login-pw').value = '';
+            event.target.reset();
+        }
+
+        function handleProfileUpdate(event) {
+            event.preventDefault();
+            const newName = document.getElementById('profile-edit-name').value;
+            currentUser.name = newName;
+            
+            const account = registeredUsers.find(u => u.id === currentUser.id);
+            if(account) account.name = newName;
+
+            saveAllState();
+            updateProfileUI();
+            closeModal('profile-modal');
+            renderAllViews();
+            showToast('프로필이 수정되었습니다.', 'success');
+        }
+
+        function updateProfileUI() {
+            if(!currentUser) return;
+            document.getElementById('sidebar-profile-name').innerText = currentUser.name;
+            document.getElementById('sidebar-profile-img').src = currentUser.img || 'https://lh3.googleusercontent.com/d/1dQ9U19nB7Jg4THQ__3gihknJc5FnNf8Q';
+            document.getElementById('welcome-name-banner').innerText = `안녕하세요, ${currentUser.name}님! 👋`;
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('app-portal').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('login-id').value = '';
+            document.getElementById('login-pw').value = '';
+            showToast('로그아웃 되었습니다.', 'info');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.className = 'nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800/60';
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = 'nav-item w-full flex items-center justify-start gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all text-white bg-east-600 shadow-md shadow-east-600/30';
+            
+            const titleMap = { 'dashboard': '대시보드', 'mail': '전자메일', 'commute': '출퇴근 기록부', 'calendar': '일정 관리', 'approval': '전자결재', 'addressbook': '주소록', 'notice': '공지사항' };
+            document.getElementById('page-title').innerText = titleMap[tabName];
+            if(tabName === 'calendar') renderCalendarGrid();
+            if(tabName === 'addressbook') renderAddressBook();
+        }
+
+        function startLiveClock() {
+            setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0];
+                const fullStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${timeStr}`;
+                if(document.getElementById('header-clock')) document.getElementById('header-clock').innerText = fullStr;
+            }, 1000);
+        }
+
+        function openCommuteModal(type) {
+            commuteMode = type;
+            document.getElementById('commute-modal-title').innerText = type === 'in' ? '출근 시간 설정' : '퇴근 시간 설정';
+            const now = new Date();
+            document.getElementById('commute-input-date').value = now.toISOString().split('T')[0];
+            document.getElementById('commute-input-time').value = now.toTimeString().substring(0,5);
+            openModal('commute-modal');
+        }
+
+        function handleCommuteSubmit(e) {
+            e.preventDefault();
+            const dateVal = document.getElementById('commute-input-date').value.replace(/-/g, '.');
+            const timeVal = document.getElementById('commute-input-time').value;
+
+            let record = commuteHistory.find(r => r.userId === currentUser.id && r.date === dateVal);
+            if(!record) {
+                record = { userId: currentUser.id, date: dateVal, inTime: '-', outTime: '-' };
+                commuteHistory.push(record);
+            }
+
+            if(commuteMode === 'in') {
+                record.inTime = timeVal;
+                showToast(`선택하신 날짜(${dateVal}) 출근 시간(${timeVal})이 등록되었습니다.`, 'success');
+            } else {
+                record.outTime = timeVal;
+                showToast(`선택하신 날짜(${dateVal}) 퇴근 시간(${timeVal})이 등록되었습니다.`, 'info');
+            }
+            saveAllState();
+            closeModal('commute-modal');
+            renderCommuteHistory();
+        }
+
+        function renderCommuteHistory() {
+            if(!currentUser) return;
+            const filterMonth = document.getElementById('commute-filter-month').value;
+            const filtered = commuteHistory.filter(r => r.userId === currentUser.id && r.date.startsWith(filterMonth.replace('-', '.')));
+            
+            filtered.sort((a, b) => a.date.localeCompare(b.date));
+
+            document.getElementById('commute-history-body').innerHTML = filtered.map(r => `
+                <tr>
+                    <td class="p-4 font-medium text-slate-900">${r.date}</td>
+                    <td class="p-4 text-east-600 font-bold">${r.inTime}</td>
+                    <td class="p-4 text-slate-600 font-bold">${r.outTime}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="3" class="p-6 text-center text-xs text-slate-400">해당 월의 출퇴근 기록이 없습니다.</td></tr>';
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.className = `bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-semibold`;
+            toast.innerHTML = `<i class="fa-solid fa-bell"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
+        function openModal(id) { 
+            document.getElementById(id).classList.remove('hidden'); 
+            if(id === 'mail-compose-modal') {
+                populateMailFormSelects();
+            } else if(id === 'schedule-modal') {
+                populateScheduleFormSelects();
+            } else if(id === 'approval-modal') {
+                populateApprovalFormSelects();
+            }
+        }
+
+        function populateMailFormSelects() {
+            const toSelect = document.getElementById('mail-to');
+            toSelect.innerHTML = registeredUsers.map(u => `<option value="${u.id}">${u.name} (${u.email})</option>`).join('');
+
+            const ccContainer = document.getElementById('mail-cc-checkboxes');
+            ccContainer.innerHTML = registeredUsers.map(u => `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                    <input type="checkbox" name="mail-cc-user" value="${u.id}" class="rounded text-east-600 focus:ring-east-500 border-slate-300">
+                    <span>${u.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function populateScheduleFormSelects() {
+            const attendeesContainer = document.getElementById('sched-attendees-checkboxes');
+            attendeesContainer.innerHTML = registeredUsers.map(u => `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                    <input type="checkbox" name="sched-attendee-user" value="${u.name}" class="rounded text-east-600 focus:ring-east-500 border-slate-300">
+                    <span>${u.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function populateApprovalFormSelects() {
+            const approverSelect = document.getElementById('approval-approver');
+            approverSelect.innerHTML = registeredUsers.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+
+            const ccContainer = document.getElementById('approval-cc-checkboxes');
+            ccContainer.innerHTML = registeredUsers.map(u => `
+                <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                    <input type="checkbox" name="approval-cc-user" value="${u.name}" class="rounded text-east-600 focus:ring-east-500 border-slate-300">
+                    <span>${u.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function openMailComposer() { openModal('mail-compose-modal'); }
+
+        function handleSendMail(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('mail-file');
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : null;
+            
+            const recipientId = document.getElementById('mail-to').value;
+            const recipientUser = registeredUsers.find(u => u.id === recipientId);
+            const recipientName = recipientUser ? recipientUser.name : recipientId;
+
+            const checkedCCIds = Array.from(document.querySelectorAll('input[name="mail-cc-user"]:checked')).map(el => el.value);
+            const checkedCCNames = checkedCCIds.map(id => {
+                const u = registeredUsers.find(user => user.id === id);
+                return u ? u.name : id;
+            }).join(', ');
+
+            const baseEmailData = {
+                subject: document.getElementById('mail-subject').value,
+                body: document.getElementById('mail-body').value,
+                sender: `${currentUser.name}`,
+                recipient: recipientName,
+                cc: checkedCCNames,
+                file: fileName,
+                date: '방금',
+                starred: false
+            };
+
+            emailState.unshift({
+                id: Date.now() + 1,
+                ownerId: currentUser.id,
+                folder: 'sent',
+                ...baseEmailData
+            });
+
+            if (recipientId) {
+                emailState.unshift({
+                    id: Date.now() + 2,
+                    ownerId: recipientId,
+                    folder: 'inbox',
+                    ...baseEmailData
+                });
+            }
+
+            checkedCCIds.forEach((ccId, index) => {
+                emailState.unshift({
+                    id: Date.now() + 3 + index,
+                    ownerId: ccId,
+                    folder: 'inbox',
+                    ...baseEmailData
+                });
+            });
+
+            saveAllState();
+            closeModal('mail-compose-modal');
+            document.getElementById('file-chosen-name').innerText = '선택된 파일 없음';
+            e.target.reset();
+            showToast('메일이 성공적으로 발송되었습니다.', 'success');
+            renderAllViews();
+        }
+
+        function filterMailFolder(folder) {
+            currentFolder = folder;
+            document.querySelectorAll('.mail-folder-btn').forEach(btn => btn.className = 'mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors');
+            document.getElementById(`folder-${folder}`).className = 'mail-folder-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-east-100 text-east-700 font-bold transition-colors';
+            
+            const titles = { 'all': '전체메일함', 'inbox': '받은메일함', 'sent': '보낸메일함', 'starred': '중요메일함', 'trash': '휴지통' };
+            document.getElementById('mail-folder-title').innerText = titles[folder];
+            renderEmailList();
+        }
+
+        function renderEmailList() {
+            if(!currentUser) return;
+            const container = document.getElementById('mail-list-container');
+            let myMails = emailState.filter(m => m.ownerId === currentUser.id);
+            let filtered = [];
+            if(currentFolder === 'all') filtered = myMails.filter(m => m.folder !== 'trash');
+            else if(currentFolder === 'starred') filtered = myMails.filter(m => m.starred && m.folder !== 'trash');
+            else filtered = myMails.filter(m => m.folder === currentFolder);
+
+            container.innerHTML = filtered.map(m => `
+                <div class="p-4 hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100">
+                    <div class="flex items-center gap-3 flex-1" onclick="openEmailDetail(${m.id})">
+                        <button type="button" onclick="event.stopPropagation(); toggleStarMail(${m.id})" class="text-base ${m.starred ? 'text-amber-400' : 'text-slate-300'} hover:text-amber-500">
+                            <i class="fa-solid fa-star"></i>
+                        </button>
+                        <h4 class="text-sm font-bold text-slate-900">${m.sender} - ${m.subject} <span class="text-xs text-slate-400 font-normal ml-2">(받는사람: ${m.recipient || '-'})</span></h4>
+                    </div>
+                    <span class="text-xs text-slate-400">${m.date}</span>
+                </div>
+            `).join('') || '<div class="p-8 text-center text-xs text-slate-400">메일이 없습니다.</div>';
+        }
+
+        function toggleStarMail(id) {
+            const mail = emailState.find(m => m.id === id && m.ownerId === currentUser.id);
+            if(mail) {
+                mail.starred = !mail.starred;
+                saveAllState();
+                renderAllViews();
+            }
+        }
+
+        function toggleStarCurrentMail() {
+            const mail = emailState.find(m => m.id === currentDetailEmailId && m.ownerId === currentUser.id);
+            if(mail) {
+                mail.starred = !mail.starred;
+                document.getElementById('detail-star-btn').className = `text-base ${mail.starred ? 'text-amber-400' : 'text-slate-300'} hover:text-amber-500`;
+                saveAllState();
+                renderAllViews();
+            }
+        }
+
+        function openEmailDetail(id) {
+            const mail = emailState.find(m => m.id === id && m.ownerId === currentUser.id);
+            if(!mail) return;
+            currentDetailEmailId = id;
+            document.getElementById('email-detail-subject').innerText = mail.subject;
+            document.getElementById('email-detail-sender').innerText = `보낸사람: ${mail.sender}`;
+            document.getElementById('email-detail-recipient').innerText = `받는사람: ${mail.recipient || '미지정'}`;
+            document.getElementById('email-detail-body').innerText = mail.body;
+            document.getElementById('detail-star-btn').className = `text-base ${mail.starred ? 'text-amber-400' : 'text-slate-300'} hover:text-amber-500`;
+            
+            const ccEl = document.getElementById('email-detail-cc');
+            if(mail.cc) { ccEl.classList.remove('hidden'); ccEl.querySelector('span').innerText = mail.cc; } else { ccEl.classList.add('hidden'); }
+
+            const fileEl = document.getElementById('email-detail-file');
+            if(mail.file) { fileEl.classList.remove('hidden'); fileEl.querySelector('span').innerText = mail.file; } else { fileEl.classList.add('hidden'); }
+
+            openModal('email-detail-modal');
+        }
+
+        function deleteCurrentEmail() {
+            const mail = emailState.find(m => m.id === currentDetailEmailId && m.ownerId === currentUser.id);
+            if(!mail) return;
+            if(currentFolder !== 'trash') {
+                mail.folder = 'trash';
+                showToast('휴지통으로 이동되었습니다.', 'info');
+            } else {
+                emailState = emailState.filter(m => m.id !== currentDetailEmailId);
+                showToast('메일이 영구 삭제되었습니다.', 'danger');
+            }
+            saveAllState();
+            closeModal('email-detail-modal');
+            renderAllViews();
+        }
+
+        function onCalendarMonthChange() {
+            renderCalendarGrid();
+        }
+
+        function renderCalendarGrid() {
+            const val = document.getElementById('calendar-filter-month').value;
+            const [yearStr, monthStr] = val.split('-');
+            const year = parseInt(yearStr);
+            const month = parseInt(monthStr);
+
+            document.getElementById('calendar-title-heading').innerText = `${year}년 ${month}월 캘린더`;
+
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const lastDate = new Date(year, month, 0).getDate();
+
+            const container = document.getElementById('calendar-grid-container');
+            let html = `<div class="bg-slate-100 py-3 text-red-500">일</div><div class="bg-slate-100 py-3">월</div><div class="bg-slate-100 py-3">화</div><div class="bg-slate-100 py-3">수</div><div class="bg-slate-100 py-3">목</div><div class="bg-slate-100 py-3">금</div><div class="bg-slate-100 py-3 text-blue-500">토</div>`;
+            
+            for(let i=0; i<firstDay; i++) {
+                html += `<div class="bg-white min-h-[90px] p-2 text-slate-300"></div>`;
+            }
+
+            for(let d=1; d<=lastDate; d++) {
+                const mm = String(month).padStart(2, '0');
+                const dd = String(d).padStart(2, '0');
+                const dateStr = `${year}-${mm}-${dd}`;
+                const mdKey = `${mm}-${dd}`;
+                
+                // 연도별 공휴일 매핑 동적 선택
+                let holidayName = null;
+                if(year === 2026) {
+                    holidayName = holidays2026[mdKey];
+                } else if(year === 2027) {
+                    holidayName = holidays2027[mdKey];
+                }
+
+                const dayOfWeek = new Date(year, month - 1, d).getDay();
+                
+                let dayColorClass = 'text-slate-700';
+                if(dayOfWeek === 0 || holidayName) dayColorClass = 'text-red-600 font-bold';
+                else if(dayOfWeek === 6) dayColorClass = 'text-blue-600 font-bold';
+
+                const schedules = scheduleState.filter(s => s.date === dateStr);
+                
+                html += `
+                    <div class="bg-white min-h-[90px] p-2 text-left relative hover:bg-slate-50 border border-slate-100 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="${dayColorClass}">${d}</span>
+                                ${holidayName ? `<span class="text-[9px] bg-red-100 text-red-600 px-1 rounded font-semibold">${holidayName}</span>` : ''}
+                            </div>
+                            <div class="mt-1 space-y-1">
+                                ${schedules.map(s => `<div onclick="openScheduleDetail(${s.id})" class="p-1 bg-east-600 text-white rounded text-[10px] truncate cursor-pointer">${s.title}</div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function handleScheduleSubmit(e) {
+            e.preventDefault();
+            const checkedAttendees = Array.from(document.querySelectorAll('input[name="sched-attendee-user"]:checked')).map(el => el.value).join(', ');
+
+            scheduleState.push({
+                id: Date.now(),
+                title: document.getElementById('sched-title').value,
+                date: document.getElementById('sched-date').value,
+                time: document.getElementById('sched-time').value,
+                location: document.getElementById('sched-location').value || '미지정',
+                attendees: checkedAttendees || '없음',
+                desc: document.getElementById('sched-desc').value
+            });
+            saveAllState();
+            closeModal('schedule-modal');
+            showToast('일정이 등록되었습니다.', 'success');
+            renderAllViews();
+            e.target.reset();
+        }
+
+        function openScheduleDetail(id) {
+            const s = scheduleState.find(item => item.id === id);
+            if(!s) return;
+            document.getElementById('sched-detail-title').innerText = s.title;
+            document.getElementById('sched-detail-datetime').innerText = `${s.date} ${s.time}`;
+            document.getElementById('sched-detail-location').innerText = s.location;
+            document.getElementById('sched-detail-attendees').innerText = s.attendees;
+            document.getElementById('sched-detail-desc').innerText = s.desc || '내용 없음';
+            openModal('schedule-detail-modal');
+        }
+
+        function toggleApprovalFormType() {
+            const type = document.getElementById('approval-type').value;
+            if(type === '휴가계획서') {
+                document.getElementById('form-fields-worklog').classList.add('hidden');
+                document.getElementById('form-fields-leave').classList.remove('hidden');
+            } else {
+                document.getElementById('form-fields-worklog').classList.remove('hidden');
+                document.getElementById('form-fields-leave').classList.add('hidden');
+            }
+        }
+
+        function handleApprovalSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('approval-type').value;
+            const title = document.getElementById('approval-title').value;
+            const approver = document.getElementById('approval-approver').value;
+            const checkedCC = Array.from(document.querySelectorAll('input[name="approval-cc-user"]:checked')).map(el => el.value).join(', ');
+
+            let content = '';
+            if(type === '휴가계획서') {
+                const startDate = document.getElementById('leave-start-date').value;
+                const endDate = document.getElementById('leave-end-date').value;
+                content = `[휴가 구분] ${document.getElementById('leave-type').value}\n[휴가 기간] ${startDate} ~ ${endDate}\n[사유] ${document.getElementById('leave-reason').value || '없음'}`;
+            } else {
+                content = document.getElementById('approval-content').value;
+            }
+
+            approvalState.unshift({
+                id: Date.now(), ownerId: currentUser.id, title, category: type, author: currentUser.name,
+                date: '2026.10.11', status: '대기', approver, cc: checkedCC || '없음', content
+            });
+
+            saveAllState();
+            closeModal('approval-modal');
+            showToast('결재 상신되었습니다. (대기중 상태로 등록)', 'success');
+            renderApprovalList();
+            e.target.reset();
+        }
+
+        function filterApprovalTab(tab) {
+            currentApprovalTab = tab;
+            document.querySelectorAll('.approval-sub-tab').forEach(btn => {
+                btn.className = 'approval-sub-tab px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900';
+            });
+            document.getElementById(`approval-tab-${tab}`).className = 'approval-sub-tab px-4 py-2 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm';
+            renderApprovalList();
+        }
+
+        function renderApprovalList() {
+            if(!currentUser) return;
+            let allApprovals = approvalState;
+            let filtered = allApprovals;
+            if (currentApprovalTab !== 'all') {
+                filtered = allApprovals.filter(a => a.status === currentApprovalTab);
+            }
+
+            document.getElementById('approval-list-container').innerHTML = filtered.map(item => {
+                let badgeColor = 'bg-amber-50 text-amber-600';
+                if(item.status === '결재완료') badgeColor = 'bg-emerald-50 text-emerald-600';
+                if(item.status === '반려') badgeColor = 'bg-red-50 text-red-600';
+
+                return `
+                    <div class="p-5 hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100" onclick="openApprovalDetail(${item.id})">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 text-xs font-bold bg-east-50 text-east-700 rounded-md">${item.category}</span>
+                                <span class="px-2.5 py-1 text-xs font-bold ${badgeColor} rounded-full">${item.status}</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-900 mt-2">${item.title}</h4>
+                            <p class="text-xs text-slate-500">기안자: ${item.author} | 결재자: ${item.approver} | 기안일자: ${item.date}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div class="p-8 text-center text-xs text-slate-400">해당하는 결재 문서가 없습니다.</div>';
+        }
+
+        function openApprovalDetail(id) {
+            const item = approvalState.find(a => a.id === id);
+            if(!item) return;
+
+            currentDetailApprovalId = id;
+            document.getElementById('detail-category-badge').innerText = item.category;
+            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-author').innerText = item.author;
+            document.getElementById('detail-date').innerText = item.date;
+            document.getElementById('detail-approver').innerText = item.approver;
+            document.getElementById('detail-content').innerText = item.content;
+            document.getElementById('detail-cc').innerText = item.cc || '없음';
+
+            const statusBadge = document.getElementById('detail-status-badge');
+            statusBadge.innerText = item.status;
+            if(item.status === '대기') statusBadge.className = 'px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-bold';
+            else if(item.status === '결재완료') statusBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-bold';
+            else if(item.status === '반려') statusBadge.className = 'px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-bold';
+
+            const actionContainer = document.getElementById('detail-action-buttons');
+            
+            if (item.status === '대기' && item.approver === currentUser.name) {
+                actionContainer.innerHTML = `
+                    <div class="flex gap-2">
+                        <button onclick="handleApprovalAction(${item.id}, '결재완료')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm">결재(승인)</button>
+                        <button onclick="handleApprovalAction(${item.id}, '반려')" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm">반려</button>
+                    </div>
+                `;
+            } else {
+                actionContainer.innerHTML = '';
+            }
+
+            openModal('approval-detail-modal');
+        }
+
+        function handleApprovalAction(id, newStatus) {
+            const item = approvalState.find(a => a.id === id);
+            if(item) {
+                item.status = newStatus;
+                saveAllState();
+                showToast(`문서가 ${newStatus === '결재완료' ? '결재(승인)' : '반려'} 처리되었습니다.`, newStatus === '결재완료' ? 'success' : 'danger');
+                closeModal('approval-detail-modal');
+                renderApprovalList();
+            }
+        }
+
+        function deleteApprovalCurrent() {
+            approvalState = approvalState.filter(a => a.id !== currentDetailApprovalId || a.ownerId !== currentUser.id);
+            saveAllState();
+            closeModal('approval-detail-modal');
+            renderApprovalList();
+            showToast('기안 문서가 삭제되었습니다.', 'danger');
+        }
+
+        function renderAddressBook() {
+            const tbody = document.getElementById('address-book-body');
+            if(!tbody) return;
+            tbody.innerHTML = registeredUsers.map(user => `
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="openMemberDetail('${user.id}')">
+                    <td class="p-4 font-bold text-slate-900">${user.name}</td>
+                    <td class="p-4 text-slate-600">${user.email || '-'}</td>
+                    <td class="p-4 text-slate-600">${user.phone || '-'}</td>
+                    <td class="p-4 text-east-600 font-semibold hover:underline">상세보기</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="p-6 text-center text-xs text-slate-400">등록된 임직원이 없습니다.</td></tr>';
+        }
+
+        function openMemberDetail(userId) {
+            const user = registeredUsers.find(u => u.id === userId);
+            if(!user) return;
+            document.getElementById('member-detail-initial').innerText = user.name.charAt(0);
+            document.getElementById('member-detail-name').innerText = user.name;
+            document.getElementById('member-detail-email').innerText = user.email || '-';
+            document.getElementById('member-detail-phone').innerText = user.phone || '-';
+            openModal('member-detail-modal');
+        }
+
+        function renderNoticeList() {
+            document.getElementById('notice-list-container').innerHTML = noticeState.map(n => `
+                <div class="p-4 rounded-xl border border-slate-200 bg-white cursor-pointer hover:bg-slate-50" onclick="openNoticeDetail(${n.id})">
+                    <h4 class="text-sm font-bold text-slate-900">${n.title}</h4>
+                    <p class="text-xs text-slate-400 mt-1">작성자: ${n.author} | 등록일: ${n.date}</p>
+                </div>
+            `).join('') || '<div class="text-xs text-slate-400">등록된 공지사항이 없습니다.</div>';
+        }
+
+        function openNoticeDetail(id) {
+            const n = noticeState.find(item => item.id === id);
+            document.getElementById('notice-detail-title').innerText = n.title;
+            document.getElementById('notice-detail-author').innerText = `작성자: ${n.author}`;
+            document.getElementById('notice-detail-date').innerText = `등록일: ${n.date}`;
+            document.getElementById('notice-detail-body').innerText = n.content;
+            openModal('notice-detail-modal');
+        }
+
+        function handleNoticeSubmit(e) {
+            e.preventDefault();
+            noticeState.unshift({ id: Date.now(), title: document.getElementById('notice-title').value, author: currentUser.name, date: '2026.10.11', content: document.getElementById('notice-content').value });
+            saveAllState();
+            closeModal('notice-modal');
+            showToast('공지 등록 완료', 'success');
+            renderAllViews();
+        }
+
+        function renderDashboardWidgets() {
+            if(!currentUser) return;
+            const myMails = emailState.filter(m => m.ownerId === currentUser.id && m.folder === 'inbox');
+            document.getElementById('dash-mail-list').innerHTML = myMails.slice(0, 3).map(m => `
+                <div class="text-xs truncate text-slate-700 py-1 border-b border-slate-50 flex justify-between">
+                    <span class="font-bold truncate">${m.sender}: ${m.subject}</span>
+                    <span class="text-slate-400 shrink-0">${m.date}</span>
+                </div>
+            `).join('') || '<div class="text-xs text-slate-400">메일이 없습니다.</div>';
+
+            document.getElementById('dash-notice-list').innerHTML = noticeState.slice(0, 3).map(n => `
+                <div class="text-xs truncate text-slate-700 py-1 border-b border-slate-50 flex justify-between cursor-pointer" onclick="openNoticeDetail(${n.id})">
+                    <span class="font-bold truncate">${n.title}</span>
+                    <span class="text-slate-400 shrink-0">${n.date}</span>
+                </div>
+            `).join('') || '<div class="text-xs text-slate-400">공지가 없습니다.</div>';
+
+            document.getElementById('dash-schedule-list').innerHTML = scheduleState.slice(0, 3).map(s => `
+                <div class="text-xs truncate text-slate-700 py-1 border-b border-slate-50 flex justify-between">
+                    <span class="font-bold truncate">${s.title} (${s.time})</span>
+                    <span class="text-slate-400 shrink-0">${s.date}</span>
+                </div>
+            `).join('') || '<div class="text-xs text-slate-400">일정이 없습니다.</div>';
+        }
+
+        function renderAllViews() {
+            if(!currentUser) return;
+            renderDashboardWidgets();
+            renderEmailList();
+            renderCommuteHistory();
+            renderCalendarGrid();
+            renderApprovalList();
+            renderNoticeList();
+            renderAddressBook();
+        }
+    </script>
+</body>
+</html>
