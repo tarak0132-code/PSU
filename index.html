@@ -106,7 +106,7 @@
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Mobile Sidebar Backdrop Overlay -->
-    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
 
     <!-- 1. LOGIN SCREEN CONTAINER -->
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-east-950 p-4 transition-opacity duration-300">
@@ -362,7 +362,7 @@
                         <span class="block text-[10px] text-east-400 font-medium tracking-widest uppercase">Intranet Portal</span>
                     </div>
                 </div>
-                <button id="close-sidebar-btn" onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button id="close-sidebar-btn" class="md:hidden text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
             <div class="p-4 mx-3 my-3 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition-colors" onclick="openModal('profile-modal')" title="프로필 수정">
@@ -406,9 +406,9 @@
 
         <!-- Main Content Area Wrapper -->
         <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50">
-            <header class="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between shrink-0 z-10 shadow-sm relative">
+            <header class="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between shrink-0 z-30 shadow-sm relative">
                 <div class="flex items-center gap-4">
-                    <button id="open-sidebar-btn" onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 focus:outline-none p-1"><i class="fa-solid fa-bars text-xl"></i></button>
+                    <button id="open-sidebar-btn" class="md:hidden text-slate-600 hover:text-slate-900 focus:outline-none p-2 cursor-pointer"><i class="fa-solid fa-bars text-xl"></i></button>
                     <h1 id="page-title" class="text-xl font-bold text-slate-900">대시보드</h1>
                 </div>
                 <div class="flex items-center gap-3 sm:gap-5">
@@ -963,7 +963,7 @@
             }
         }
 
-        // 모바일 사이드바 토글 함수 구현
+        // 모바일 사이드바 토글 함수 및 이벤트 리스너 바인딩
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -979,6 +979,48 @@
                 if (backdrop) backdrop.classList.add('hidden');
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const openSidebarBtn = document.getElementById('open-sidebar-btn');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+            if (openSidebarBtn) {
+                openSidebarBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+                openSidebarBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+                closeSidebarBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+
+            if (sidebarBackdrop) {
+                sidebarBackdrop.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+                sidebarBackdrop.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+        });
 
         function handleLogin(event) {
             event.preventDefault();
@@ -1077,7 +1119,6 @@
             if(tabName === 'calendar') renderCalendarGrid();
             if(tabName === 'addressbook') renderAddressBook();
 
-            // 모바일에서 탭 선택 시 자동으로 사이드바 닫기
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
                 const backdrop = document.getElementById('sidebar-backdrop');
